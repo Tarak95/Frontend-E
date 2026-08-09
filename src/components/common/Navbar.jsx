@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
   ShoppingBag, 
@@ -22,7 +22,6 @@ import {
   Tv,
   Headphones
 } from 'lucide-react';
-import { useAuth } from '../../hooks/useAuth';
 import { useCart } from '../../hooks/useCart';
 import { CATEGORIES } from '../../utils/constants';
 
@@ -42,9 +41,26 @@ export const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [accountDropdownOpen, setAccountDropdownOpen] = useState(false);
-  const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
 
-  const { user, isAuthenticated, isAdmin, logout } = useAuth();
+  // LocalStorage থেকে ইউজারের ডাটা লোড করা
+  const [user, setUser] = useState(() => {
+    return JSON.parse(localStorage.getItem('user')) || null;
+  });
+
+  // Event Listener এর মাধ্যমে রিয়েল-টাইমে ডাটা সিঙ্ক রাখা
+  useEffect(() => {
+    const handleAuthChange = () => {
+      const savedUser = localStorage.getItem('user');
+      setUser(savedUser ? JSON.parse(savedUser) : null);
+    };
+
+    window.addEventListener('authChange', handleAuthChange);
+    return () => window.removeEventListener('authChange', handleAuthChange);
+  }, []);
+
+  const isAuthenticated = !!user;
+  const isAdmin = user?.role === 'admin';
+
   const { cartCount, cartTotal } = useCart();
   const navigate = useNavigate();
   const location = useLocation();
@@ -57,8 +73,10 @@ export const Navbar = () => {
     }
   };
 
-  const handleLogout = async () => {
-    await logout();
+  // লগআউট ফাংশনালটি
+  const handleLogout = () => {
+    localStorage.removeItem('user');
+    window.dispatchEvent(new Event('authChange'));
     setAccountDropdownOpen(false);
     setMobileMenuOpen(false);
     navigate('/');
@@ -146,7 +164,7 @@ export const Navbar = () => {
                   >
                     <img
                       src={user?.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80'}
-                      alt={user?.name}
+                      alt={user?.name || 'User Profile'}
                       className="w-8 h-8 rounded-full object-cover ring-2 ring-emerald-500/30"
                     />
                     <div className="hidden lg:flex flex-col text-left">
@@ -330,7 +348,7 @@ export const Navbar = () => {
                 )}
                 <button
                   onClick={handleLogout}
-                  className="w-full flex items-center gap-2 p-2 text-xs font-semibold text-rose-600 text-left"
+                  className="w-full flex items-center gap-2 p-2 text-xs font-semibold text-rose-600 text-left cursor-pointer"
                 >
                   <LogOut size={16} />
                   Logout
