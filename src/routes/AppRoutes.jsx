@@ -39,7 +39,7 @@ import ProtectedRoute from '../components/common/ProtectedRoute';
 export const AppRoutes = () => {
   return (
     <Routes>
-      {/* Customer / Public Storefront Routes */}
+      {/* 🟢 ১. Customer / Storefront Routes (স্বাধীন MainLayout) */}
       <Route path="/" element={<MainLayout />}>
         <Route index element={<Home />} />
         <Route path="products" element={<ProductListing />} />
@@ -73,29 +73,20 @@ export const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
+      </Route> {/* 👈 এখানে MainLayout বন্ধ হয়ে গেল! */}
 
-        {/* 🎯 ১. MainLayout এর ভেতরেও রিসেট পাসওয়ার্ড রুটগুলো সাপোর্ট করানোর জন্য */}
-        <Route path="reset-password/:token" element={<ResetPassword />} />
-        <Route path="resetpassword/:token" element={<ResetPassword />} />
-
-        <Route path="*" element={<NotFound />} />
-      </Route>
-
-      {/* Auth Routes with Split-Screen Layout */}
+      {/* 🔵 ২. Auth Routes (স্বাধীন AuthLayout) */}
       <Route element={<AuthLayout />}>
         <Route path="login" element={<Login />} />
         <Route path="register" element={<Register />} />
         <Route path="forgot-password" element={<ForgotPassword />} />
-        
-        {/* 🎯 ২. AuthLayout এর ভেতরেও হাইফেনসহ ও ছাড়া উভয় রুট রাখা হলো */}
         <Route path="reset-password/:token" element={<ResetPassword />} />
         <Route path="resetpassword/:token" element={<ResetPassword />} />
-        
         <Route path="verify-email/:token" element={<VerifyEmail />} />
         <Route path="verifyemail/:token" element={<VerifyEmail />} />
       </Route>
 
-      {/* Admin Panel Routes */}
+      {/* 🔴 ৩. Admin Panel Routes (স্বাধীন AdminLayout) */}
       <Route
         path="/admin"
         element={
@@ -112,6 +103,9 @@ export const AppRoutes = () => {
         <Route path="orders" element={<ManageOrders />} />
         <Route path="profile" element={<Profile />} />
       </Route>
+
+      {/* 🟡 ৪. Not Found Page */}
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 };

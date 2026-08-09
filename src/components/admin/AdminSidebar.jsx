@@ -38,14 +38,14 @@ export const AdminSidebar = ({ isMobileOpen, setIsMobileOpen }) => {
         />
       )}
 
-      {/* Sidebar Drawer */}
+      {/* Sidebar Drawer - fixed positioned for mobile, relative sticky/full height for desktop */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 text-slate-300 flex flex-col border-r border-slate-800 transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 shrink-0 ${
+        className={`fixed lg:sticky top-0 h-screen z-50 w-64 bg-slate-900 text-slate-300 flex flex-col border-r border-slate-800 transition-transform duration-300 ease-in-out shrink-0 ${
           isMobileOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0'
         }`}
       >
         {/* Brand Header */}
-        <div className="p-5 border-b border-slate-800 flex items-center justify-between">
+        <div className="p-5 border-b border-slate-800 flex items-center justify-between shrink-0">
           <Link to="/" onClick={handleClose} className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center text-white shadow-md">
               <ShoppingBasket size={20} />
@@ -95,7 +95,7 @@ export const AdminSidebar = ({ isMobileOpen, setIsMobileOpen }) => {
         </nav>
 
         {/* Back to store */}
-        <div className="p-4 border-t border-slate-800">
+        <div className="p-4 border-t border-slate-800 shrink-0">
           <Link
             to="/"
             onClick={handleClose}
