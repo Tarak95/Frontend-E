@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 
@@ -23,7 +22,7 @@ import Login from '../pages/auth/Login';
 import Register from '../pages/auth/Register';
 import ForgotPassword from '../pages/auth/ForgotPassword';
 import ResetPassword from '../pages/auth/ResetPassword';
-import VerifyEmail from '../pages/auth/VerifyEmail'; // <--- ১. ইমেইল ভেরিফিকেশন পেজ (যদি বানিয়ে থাকেন)
+import VerifyEmail from '../pages/auth/VerifyEmail';
 
 // Admin Pages
 import Dashboard from '../pages/admin/Dashboard';
@@ -74,6 +73,11 @@ export const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
+
+        {/* 🎯 ১. MainLayout এর ভেতরেও রিসেট পাসওয়ার্ড রুটগুলো সাপোর্ট করানোর জন্য */}
+        <Route path="reset-password/:token" element={<ResetPassword />} />
+        <Route path="resetpassword/:token" element={<ResetPassword />} />
+
         <Route path="*" element={<NotFound />} />
       </Route>
 
@@ -83,11 +87,12 @@ export const AppRoutes = () => {
         <Route path="register" element={<Register />} />
         <Route path="forgot-password" element={<ForgotPassword />} />
         
-        {/* ২. টোকেন ডাইনামিকালি ধরার জন্য :token যোগ করা হলো */}
+        {/* 🎯 ২. AuthLayout এর ভেতরেও হাইফেনসহ ও ছাড়া উভয় রুট রাখা হলো */}
         <Route path="reset-password/:token" element={<ResetPassword />} />
+        <Route path="resetpassword/:token" element={<ResetPassword />} />
         
-        {/* ৩. ইমেইল ভেরিফিকেশনের জন্য নতুন রাউট */}
         <Route path="verify-email/:token" element={<VerifyEmail />} />
+        <Route path="verifyemail/:token" element={<VerifyEmail />} />
       </Route>
 
       {/* Admin Panel Routes */}
