@@ -1,29 +1,51 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { User, Mail, Phone, MapPin, Save, ShieldCheck, Hash, Camera, Upload, Link as LinkIcon, Image as ImageIcon } from 'lucide-react';
+import axios from 'axios';
 import InputField from '../../components/common/InputField';
 import Button from '../../components/common/Button';
-import { useAuth } from '../../hooks/useAuth';
 
 export const Profile = () => {
-  const { user, updateProfile } = useAuth();
   const fileInputRef = useRef(null);
 
   const [formData, setFormData] = useState({
-    name: user?.name || '',
-    email: user?.email || '',
-    phone: user?.phone || '',
-    address: user?.address || '',
-    zipCode: user?.zipCode || '',
-    avatar: user?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+    zipCode: '',
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
   });
 
+  const [currentUser, setCurrentUser] = useState(null);
   const [showUrlInput, setShowUrlInput] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [successMsg, setSuccessMsg] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState({ type: '', text: '' });
+
+  // LocalStorage থেকে ইউজার ডাটা লোড করা
+  useEffect(() => {
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      try {
+        const parsed = JSON.parse(savedUser);
+        setCurrentUser(parsed);
+        setFormData({
+          name: parsed.name || '',
+          email: parsed.email || '',
+          phone: parsed.phone || '',
+          address: parsed.address || '',
+          zipCode: parsed.zipCode || '',
+          avatar: parsed.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
+        });
+      } catch (err) {
+        console.error('Error parsing user from localStorage:', err);
+      }
+    }
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value })); 
+    setFormData(prev => ({ ...prev, [name]: value }));
+    if (message.text) setMessage({ type: '', text: '' });
   };
 
   const handleFileChange = (e) => {
@@ -41,17 +63,47 @@ export const Profile = () => {
     }
   };
 
-  const handleSubmit = async (e) => {
+  // 🎯 LoginForm-এর মতো সরাসরি axios দিয়ে প্রফাইল আপডেট করার মূল ফাংশন
+  const handleProfileSubmit = async (e) => {
     e.preventDefault();
-    setSaving(true);
+    setLoading(true);
+    setMessage({ type: '', text: '' });
+
+    // LocalStorage থেকে বর্তমান ইউজার আইডি বের করা
+    const userId = currentUser?._id || currentUser?.id;
+
+    if (!userId) {
+      setMessage({ type: 'error', text: 'User ID not found. Please log in again.' });
+      setLoading(false);
+      return;
+    }
+
     try {
-      await updateProfile(formData);
-      setSuccessMsg('Profile information updated successfully!');
-      setTimeout(() => setSuccessMsg(''), 3000);
+      // ব্যাকএন্ডের /update/:id এ্যান্ডপয়েন্টে ডাটা পাঠানো হচ্ছে
+      const response = await axios.post(`http://localhost:5000/update/${userId}`, formData);
+
+      if (response.data.success || response.status === 200) {
+        const updatedData = response.data.data || response.data.user || { ...currentUser, ...formData };
+
+        // ১. LocalStorage এ আপডেট তথ্য সেভ করা
+        localStorage.setItem('user', JSON.stringify(updatedData));
+        setCurrentUser(updatedData);
+
+        // ২. Navbar বা অন্য কোনো কম্পোনেন্টকে জানানোর জন্য Custom Event ফায়ার করা
+        window.dispatchEvent(new Event('authChange'));
+
+        setMessage({ type: 'success', text: 'Profile updated successfully!' });
+      } else {
+        setMessage({ type: 'error', text: response.data.message || 'Failed to update profile.' });
+      }
     } catch (err) {
-      console.error('Update profile error:', err);
+      console.error('Update Profile Error:', err);
+      setMessage({
+        type: 'error',
+        text: err.response?.data?.message || 'Server error occurred. Please try again.'
+      });
     } finally {
-      setSaving(false);
+      setLoading(false);
     }
   };
 
@@ -63,16 +115,16 @@ export const Profile = () => {
       </div>
 
       <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-xs space-y-6">
-        {/* User Card Header with Avatar Upload */}
+        
+        {/* User Card Header */}
         <div className="flex flex-col sm:flex-row items-center gap-6 pb-6 border-b border-slate-100">
           <div className="relative group">
             <img
-              src={formData.avatar}
-              alt={formData.name}
+              src={currentUser?.avatar || formData.avatar}
+              alt={currentUser?.name || 'User'}
               className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover ring-4 ring-emerald-500/20 shadow-md transition-all group-hover:brightness-90"
             />
             
-            {/* Upload Badge Button */}
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
@@ -93,13 +145,14 @@ export const Profile = () => {
 
           <div className="flex-1 text-center sm:text-left space-y-2">
             <div>
-              <h2 className="text-xl font-bold text-slate-900">{formData.name || 'User'}</h2>
-              <p className="text-xs text-slate-500">{formData.email}</p>
+              {/* LocalStorage এর currentUser থেকে ডাটা রেন্ডার হচ্ছে */}
+              <h2 className="text-xl font-bold text-slate-900">{currentUser?.name || 'User'}</h2>
+              <p className="text-xs text-slate-500">{currentUser?.email || 'N/A'}</p>
             </div>
 
             <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-1">
               <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 uppercase">
-                <ShieldCheck size={12} /> {user?.role || 'Customer'}
+                <ShieldCheck size={12} /> {currentUser?.role || 'Customer'}
               </span>
 
               <button
@@ -121,7 +174,6 @@ export const Profile = () => {
               </button>
             </div>
 
-            {/* Optional Image URL Input */}
             {showUrlInput && (
               <div className="pt-2">
                 <InputField
@@ -138,7 +190,19 @@ export const Profile = () => {
         </div>
 
         {/* Edit Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleProfileSubmit} className="space-y-4">
+          
+          {/* ব্যাকএন্ড থেকে আসা Success/Error মেসেজ ডিসপ্লে */}
+          {message.text && (
+            <div className={`p-3 text-xs font-bold rounded-xl border ${
+              message.type === 'error' 
+                ? 'text-rose-600 bg-rose-50 border-rose-200' 
+                : 'text-emerald-600 bg-emerald-50 border-emerald-200'
+            }`}>
+              {message.text}
+            </div>
+          )}
+
           <InputField
             label="Full Name"
             name="name"
@@ -185,18 +249,13 @@ export const Profile = () => {
             icon={Hash}
           />
 
-          {successMsg && (
-            <p className="text-xs font-bold text-emerald-600 bg-emerald-50 p-3 rounded-xl border border-emerald-200">
-              {successMsg}
-            </p>
-          )}
-
           <div className="pt-2">
-            <Button type="submit" isLoading={saving}>
+            <Button type="submit" isLoading={loading} className="w-full sm:w-auto">
               <Save size={18} /> Save Changes
             </Button>
           </div>
         </form>
+
       </div>
     </div>
   );
