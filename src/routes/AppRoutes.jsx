@@ -39,7 +39,6 @@ import ProtectedRoute from '../components/common/ProtectedRoute';
 export const AppRoutes = () => {
   return (
     <Routes>
-      {/* 🟢 ১. Customer / Storefront Routes (স্বাধীন MainLayout) */}
       <Route path="/" element={<MainLayout />}>
         <Route index element={<Home />} />
         <Route path="products" element={<ProductListing />} />
@@ -73,9 +72,9 @@ export const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
-      </Route> {/* 👈 এখানে MainLayout বন্ধ হয়ে গেল! */}
+      </Route> 
 
-      {/* 🔵 ২. Auth Routes (স্বাধীন AuthLayout) */}
+      {/*  Auth Routes ( AuthLayout) */}
       <Route element={<AuthLayout />}>
         <Route path="login" element={<Login />} />
         <Route path="register" element={<Register />} />
@@ -86,7 +85,7 @@ export const AppRoutes = () => {
         <Route path="verifyemail/:token" element={<VerifyEmail />} />
       </Route>
 
-      {/* 🔴 ৩. Admin Panel Routes (স্বাধীন AdminLayout) */}
+      {/* Admin Panel Routes (AdminLayout) */}
       <Route
         path="/admin"
         element={
@@ -104,7 +103,7 @@ export const AppRoutes = () => {
         <Route path="profile" element={<Profile />} />
       </Route>
 
-      {/* 🟡 ৪. Not Found Page */}
+      {/*Not Found Page */}
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

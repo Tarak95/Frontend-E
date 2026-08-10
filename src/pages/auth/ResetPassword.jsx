@@ -15,7 +15,6 @@ export const ResetPassword = () => {
     setIsLoading(true);
     setErrorMessage('');
 
-    // formData থেকে newPassword এবং confirmPassword বের করা
     const newPassword = typeof formData === 'object' ? (formData.newPassword || formData.password) : formData;
     const confirmPassword = typeof formData === 'object' ? (formData.confirmPassword || formData.password) : formData;
 

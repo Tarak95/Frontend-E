@@ -23,7 +23,6 @@ export const LoginForm = ({ onSubmit, isLoading: externalLoading }) => {
     }
   };
 
-  // 🎯 লগইন করার মূল ফাংশন
   const handleLoginSubmit = async (dataToSubmit) => {
     setLoading(true);
     setErrors({});
@@ -35,18 +34,15 @@ export const LoginForm = ({ onSubmit, isLoading: externalLoading }) => {
       });
 
       if (response.data.success) {
-        // ১. JWT Token ও User Data আলাদাভাবে LocalStorage-এ সেভ করা
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('user', JSON.stringify(response.data.data));
 
-        // ২. Navbar বা অ্যাপের অন্যান্য স্টেট আপডেট করার জন্য Custom Event
         window.dispatchEvent(new Event('authChange'));
 
         if (onSubmit) {
           onSubmit(response.data);
         }
 
-        // ৩. Admin হলে '/admin' আর সাধারণ User হলে '/' এ নেভিগেট
         const role = response.data.data?.role;
         navigate(role === 'admin' ? '/admin' : '/');
       } else {
@@ -75,7 +71,6 @@ export const LoginForm = ({ onSubmit, isLoading: externalLoading }) => {
     handleLoginSubmit(formData);
   };
 
-  // 🎯 ডেমো অ্যাকাউন্ট দিয়ে দ্রুত লগইনের ফাংশন
   const handleQuickFill = (email, password) => {
     const newData = { email, password, rememberMe: true };
     setFormData(newData);
@@ -85,7 +80,6 @@ export const LoginForm = ({ onSubmit, isLoading: externalLoading }) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 w-full">
-      {/* ব্যাকএন্ড এরর মেসেজ */}
       {errors.form && (
         <div className="p-2.5 text-xs text-rose-600 bg-rose-50 rounded border border-rose-200 font-medium">
           {errors.form}
@@ -135,43 +129,6 @@ export const LoginForm = ({ onSubmit, isLoading: externalLoading }) => {
       <Button type="submit" isLoading={loading || externalLoading} className="w-full mt-2" size="lg">
         <LogIn size={18} /> Sign In
       </Button>
-
-      {/* 🎯 Quick Demo Credentials Buttons
-      <div className="mt-4 p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs space-y-2">
-        <div className="flex items-center justify-between">
-          <span className="font-bold text-slate-700">Demo Accounts:</span>
-          <span className="text-[10px] text-slate-400 font-normal">Click to Sign In</span>
-        </div>
-        <div className="grid grid-cols-2 gap-2">
-          <button
-            type="button"
-            onClick={() => handleQuickFill('user@ecobazar.com', '12345678')}
-            className="flex items-center gap-2 px-3 py-2 bg-white hover:bg-emerald-50 border border-slate-200 hover:border-emerald-500 rounded-lg text-slate-700 hover:text-emerald-700 font-bold shadow-xs transition-all cursor-pointer group text-left"
-          >
-            <span className="text-base group-hover:scale-110 transition-transform">👤</span>
-            <div className="overflow-hidden">
-              <span className="block text-xs leading-none font-bold text-slate-800">User</span>
-              <span className="text-[10px] text-slate-400 font-normal font-mono block mt-0.5 truncate">
-                user@ecobazar.com
-              </span>
-            </div>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => handleQuickFill('admin@ecobazar.com', '12345678')}
-            className="flex items-center gap-2 px-3 py-2 bg-white hover:bg-emerald-50 border border-slate-200 hover:border-emerald-500 rounded-lg text-slate-700 hover:text-emerald-700 font-bold shadow-xs transition-all cursor-pointer group text-left"
-          >
-            <span className="text-base group-hover:scale-110 transition-transform">🛡️</span>
-            <div className="overflow-hidden">
-              <span className="block text-xs leading-none font-bold text-slate-800">Admin</span>
-              <span className="text-[10px] text-slate-400 font-normal font-mono block mt-0.5 truncate">
-                admin@ecobazar.com
-              </span>
-            </div>
-          </button>
-        </div>
-      </div> */}
     </form>
   );
 };

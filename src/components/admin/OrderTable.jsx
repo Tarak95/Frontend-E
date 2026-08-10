@@ -3,7 +3,6 @@ import React from 'react';
 export const OrderTable = ({ orders = [], onUpdateStatus }) => {
   const statusOptions = ['Processing', 'Shipped', 'Delivered', 'Cancelled'];
 
-  // 🎯 ১. ব্যাকএন্ড রেসপন্স অবজেক্ট কিংবা অ্যারেকে সেফলি হ্যান্ডেল করা
   const orderList = Array.isArray(orders)
     ? orders
     : Array.isArray(orders?.data)
@@ -43,7 +42,6 @@ export const OrderTable = ({ orders = [], onUpdateStatus }) => {
           <tbody className="divide-y divide-slate-100">
             {orderList.length > 0 ? (
               orderList.map((ord) => {
-                // 🎯 ২. MongoDB/Backend ফিল্ডগুলোর সাথে ম্যাপিং ও সেফটি
                 const orderId = ord._id || ord.id || 'N/A';
                 const customerName = ord.user?.name || ord.cus_name || 'Customer';
                 const customerEmail = ord.user?.email || ord.cus_email || 'N/A';

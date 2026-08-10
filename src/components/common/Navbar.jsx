@@ -42,12 +42,11 @@ export const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [accountDropdownOpen, setAccountDropdownOpen] = useState(false);
 
-  // LocalStorage থেকে ইউজারের ডাটা লোড করা
+  // Loading user data from LocalStorage
   const [user, setUser] = useState(() => {
     return JSON.parse(localStorage.getItem('user')) || null;
   });
 
-  // Event Listener এর মাধ্যমে রিয়েল-টাইমে ডাটা সিঙ্ক রাখা
   useEffect(() => {
     const handleAuthChange = () => {
       const savedUser = localStorage.getItem('user');
@@ -73,7 +72,7 @@ export const Navbar = () => {
     }
   };
 
-  // লগআউট ফাংশনালটি
+  // Logout
   const handleLogout = () => {
     localStorage.removeItem('user');
     window.dispatchEvent(new Event('authChange'));

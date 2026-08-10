@@ -27,7 +27,7 @@ export const Dashboard = () => {
         // 2. Orders Extraction
         const ords = Array.isArray(ordRes.data) ? ordRes.data : ordRes.data?.orders || ordRes.data?.data || [];
 
-        // 3. Users Extraction (🎯 আপনার ব্যাকএন্ডের userData ফিল্ড থেকে ধরা হচ্ছে)
+        // 3. Users Extraction 
         const usrs = usrRes.data?.userData || (Array.isArray(usrRes.data) ? usrRes.data : []);
 
         // Revenue Calculation
@@ -36,7 +36,7 @@ export const Dashboard = () => {
         setStats({
           productsCount: prods.length,
           ordersCount: ords.length,
-          usersCount: usrs.length, // 🔥 এখানে এখন ৫ দেখাবে!
+          usersCount: usrs.length, 
           totalRevenue: rev
         });
 

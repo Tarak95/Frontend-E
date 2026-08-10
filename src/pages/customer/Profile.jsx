@@ -21,7 +21,6 @@ export const Profile = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
 
-  // LocalStorage থেকে ইউজার ডাটা লোড করা
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
@@ -63,13 +62,12 @@ export const Profile = () => {
     }
   };
 
-  // 🎯 LoginForm-এর মতো সরাসরি axios দিয়ে প্রফাইল আপডেট করার মূল ফাংশন
+
   const handleProfileSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage({ type: '', text: '' });
 
-    // LocalStorage থেকে বর্তমান ইউজার আইডি বের করা
     const userId = currentUser?._id || currentUser?.id;
 
     if (!userId) {
@@ -79,17 +77,15 @@ export const Profile = () => {
     }
 
     try {
-      // ব্যাকএন্ডের /update/:id এ্যান্ডপয়েন্টে ডাটা পাঠানো হচ্ছে
       const response = await axios.post(`http://localhost:5000/update/${userId}`, formData);
 
       if (response.data.success || response.status === 200) {
         const updatedData = response.data.data || response.data.user || { ...currentUser, ...formData };
 
-        // ১. LocalStorage এ আপডেট তথ্য সেভ করা
+
         localStorage.setItem('user', JSON.stringify(updatedData));
         setCurrentUser(updatedData);
 
-        // ২. Navbar বা অন্য কোনো কম্পোনেন্টকে জানানোর জন্য Custom Event ফায়ার করা
         window.dispatchEvent(new Event('authChange'));
 
         setMessage({ type: 'success', text: 'Profile updated successfully!' });
@@ -145,7 +141,6 @@ export const Profile = () => {
 
           <div className="flex-1 text-center sm:text-left space-y-2">
             <div>
-              {/* LocalStorage এর currentUser থেকে ডাটা রেন্ডার হচ্ছে */}
               <h2 className="text-xl font-bold text-slate-900">{currentUser?.name || 'User'}</h2>
               <p className="text-xs text-slate-500">{currentUser?.email || 'N/A'}</p>
             </div>
@@ -192,7 +187,6 @@ export const Profile = () => {
         {/* Edit Form */}
         <form onSubmit={handleProfileSubmit} className="space-y-4">
           
-          {/* ব্যাকএন্ড থেকে আসা Success/Error মেসেজ ডিসপ্লে */}
           {message.text && (
             <div className={`p-3 text-xs font-bold rounded-xl border ${
               message.type === 'error' 

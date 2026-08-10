@@ -8,22 +8,19 @@ export const ForgotPassword = () => {
   const [sentMessage, setSentMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
-  // 🎯 Backend Connection যুক্ত মূল ফাংশন
+  //  Backend Connection 
   const handleForgotSubmit = async (formData) => {
     setIsLoading(true);
     setSentMessage('');
     setErrorMessage('');
 
-    // ForgotPasswordForm থেকে অবজেক্ট আসলে ইমেইল বের করা
     const emailToSend = typeof formData === 'string' ? formData : formData.email;
 
     try {
-      // ব্যাকএন্ডের /forgotpassword এ্যান্ডপয়েন্টে ডাটা পাঠানো
       const response = await axios.post('http://localhost:5000/forgotpassword', {
         email: emailToSend
       });
 
-      // ব্যাকএন্ড থেকে আসা মেসেজ দেখানো ("Please Check Your Email")
       if (response.data.message) {
         if (response.data.message === 'User not found') {
           setErrorMessage('User not found with this email address.');
@@ -48,14 +45,13 @@ export const ForgotPassword = () => {
         <p className="text-xs text-slate-500 mt-1">Enter your email and we'll send a password recovery link</p>
       </div>
 
-      {/* এরর মেসেজ দেখানোর জন্য */}
       {errorMessage && (
         <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-600 text-xs font-semibold">
           {errorMessage}
         </div>
       )}
 
-      {/* ইমেইল সফলভাবে পাঠানো হলে মেসেজ এবং পরবর্তী স্টেপ */}
+      {/* Message and next steps when email is sent successfully */}
       {sentMessage ? (
         <div className="space-y-4">
           <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-800 text-xs font-semibold leading-relaxed">

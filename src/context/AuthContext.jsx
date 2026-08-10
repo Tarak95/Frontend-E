@@ -10,12 +10,10 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const initAuth = async () => {
       try {
-        // ১. আগে LocalStorage থেকে 'user' কী-তে থাকা ডেটা পড়ুন
         const storedUser = localStorage.getItem('user');
         if (storedUser) {
           setUser(JSON.parse(storedUser));
         } else {
-          // যদি LocalStorage-এ না থাকে তবে API কল করুন
           const currentUser = await authApi.getCurrentUser();
           setUser(currentUser);
         }
@@ -31,7 +29,6 @@ export const AuthProvider = ({ children }) => {
   const login = async (credentials) => {
     const res = await authApi.login(credentials);
     setUser(res.user);
-    // Login এর সময়েও 'user' key-তেই সেভ করুন
     localStorage.setItem('user', JSON.stringify(res.user));
     return res;
   };
@@ -46,13 +43,12 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     await authApi.logout();
     setUser(null);
-    localStorage.removeItem('user'); // Logout এর সময় মুছে দিন
+    localStorage.removeItem('user'); 
   };
 
   const updateUserProfile = (updatedUser) => {
     const newUser = typeof updatedUser === 'object' ? { ...user, ...updatedUser } : updatedUser;
     setUser(newUser);
-    // 'ecobazar_user' বদলে 'user' দিন
     localStorage.setItem('user', JSON.stringify(newUser));
   };
 

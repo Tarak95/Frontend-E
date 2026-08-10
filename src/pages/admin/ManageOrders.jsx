@@ -10,7 +10,6 @@ export const ManageOrders = () => {
   const fetchOrders = async () => {
     setLoading(true);
     try {
-      // 🎯 getOrders() এর বদলে getAllOrders() হবে
       const res = await orderApi.getAllOrders();
       setOrders(res.data || []);
     } catch (err) {

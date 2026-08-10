@@ -2,7 +2,6 @@ import axiosInstance from './axiosInstance';
 
 export const authApi = {
   login: async (credentials) => {
-    // ১. প্রথমে স্ট্যান্ডার্ড 'user' Key থেকে চেক করুন, না পেলে 'ecobazar_user'
     const storedUserStr = localStorage.getItem('user') || localStorage.getItem('ecobazar_user');
     
     if (storedUserStr) {
@@ -10,11 +9,10 @@ export const authApi = {
       const token = `fake-jwt-token-${user._id || user.id}-${Date.now()}`;
       
       localStorage.setItem('ecobazar_token', token);
-      localStorage.setItem('user', JSON.stringify(user)); // 'user' Key-তে সেভ রাখুন
+      localStorage.setItem('user', JSON.stringify(user));
       return { success: true, user, token, message: 'Logged in successfully' };
     }
 
-    // যদি লোকাল স্টোরেজে ডেটা না থাকে
     const newUser = {
       id: `usr-${Date.now()}`,
       name: credentials.email.split('@')[0],
@@ -27,7 +25,7 @@ export const authApi = {
 
     const token = `fake-jwt-token-${newUser.id}-${Date.now()}`;
     localStorage.setItem('ecobazar_token', token);
-    localStorage.setItem('user', JSON.stringify(newUser)); // 'user' key ব্যবহার করা হয়েছে
+    localStorage.setItem('user', JSON.stringify(newUser)); 
     return { success: true, user: newUser, token, message: 'Logged in successfully' };
   },
 
@@ -44,7 +42,7 @@ export const authApi = {
 
     const token = `fake-jwt-token-${newUser.id}-${Date.now()}`;
     localStorage.setItem('ecobazar_token', token);
-    localStorage.setItem('user', JSON.stringify(newUser)); // 'user' key-তে সেভ হচ্ছে
+    localStorage.setItem('user', JSON.stringify(newUser)); 
 
     return { success: true, user: newUser, token, message: 'Account created successfully!' };
   },
@@ -68,12 +66,11 @@ export const authApi = {
   logout: async () => {
     localStorage.removeItem('ecobazar_token');
     localStorage.removeItem('ecobazar_user');
-    localStorage.removeItem('user'); // 'user' Key টিও রিমুভ করা হবে
+    localStorage.removeItem('user'); 
     return { success: true, message: 'Logged out successfully' };
   },
 
   getCurrentUser: async () => {
-    // আগে 'user' key চেক করবে, না পেলে 'ecobazar_user'
     const userStr = localStorage.getItem('user') || localStorage.getItem('ecobazar_user');
     return userStr ? JSON.parse(userStr) : null;
   }

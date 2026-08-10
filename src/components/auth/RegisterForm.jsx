@@ -10,7 +10,7 @@ export const RegisterForm = ({ onSubmit, isLoading: externalLoading }) => {
     name: '',
     email: '',
     phone: '',
-    role: 'user', // 🎯 Default Role
+    role: 'user', 
     password: '',
     confirmPassword: '',
     agreeTerms: false
@@ -59,7 +59,7 @@ export const RegisterForm = ({ onSubmit, isLoading: externalLoading }) => {
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
-        role: formData.role, // 🎯 Role পাঠানো হচ্ছে
+        role: formData.role, 
         password: formData.password,
         confirmPassword: formData.confirmPassword
       });
@@ -88,14 +88,12 @@ export const RegisterForm = ({ onSubmit, isLoading: externalLoading }) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3.5 w-full">
-      {/* এরর মেসেজ বক্স */}
       {errors.form && (
         <div className="p-2.5 text-xs text-rose-600 bg-rose-50 rounded border border-rose-200">
           {errors.form}
         </div>
       )}
 
-      {/* সাকসেস মেসেজ বক্স */}
       {successMsg && (
         <div className="p-2.5 text-xs text-emerald-600 bg-emerald-50 rounded border border-emerald-200">
           {successMsg}
