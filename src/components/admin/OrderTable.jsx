@@ -1,8 +1,16 @@
 import React from 'react';
-import { Package, Clock, CheckCircle2, Truck, XCircle } from 'lucide-react';
 
 export const OrderTable = ({ orders = [], onUpdateStatus }) => {
   const statusOptions = ['Processing', 'Shipped', 'Delivered', 'Cancelled'];
+
+  // 🎯 ১. ব্যাকএন্ড রেসপন্স অবজেক্ট কিংবা অ্যারেকে সেফলি হ্যান্ডেল করা
+  const orderList = Array.isArray(orders)
+    ? orders
+    : Array.isArray(orders?.data)
+    ? orders.data
+    : Array.isArray(orders?.orders)
+    ? orders.orders
+    : [];
 
   const getStatusBadge = (status) => {
     switch (status) {
@@ -33,36 +41,57 @@ export const OrderTable = ({ orders = [], onUpdateStatus }) => {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {orders.map((ord) => (
-              <tr key={ord.id} className="hover:bg-slate-50 transition-colors">
-                <td className="p-3 font-mono font-bold text-slate-900">{ord.id}</td>
-                <td className="p-3">
-                  <span className="font-bold text-slate-900 block">{ord.customerName}</span>
-                  <span className="text-[10px] text-slate-400">{ord.customerEmail}</span>
-                </td>
-                <td className="p-3 font-semibold text-slate-700">
-                  {ord.items?.length || 1} item(s)
-                </td>
-                <td className="p-3 font-black text-slate-900">${ord.totalAmount?.toFixed(2)}</td>
-                <td className="p-3 text-slate-600">{ord.paymentMethod}</td>
-                <td className="p-3">
-                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${getStatusBadge(ord.status)}`}>
-                    {ord.status}
-                  </span>
-                </td>
-                <td className="p-3 text-right">
-                  <select
-                    value={ord.status}
-                    onChange={(e) => onUpdateStatus(ord.id, e.target.value)}
-                    className="p-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500 font-semibold text-slate-800"
-                  >
-                    {statusOptions.map(st => (
-                      <option key={st} value={st}>{st}</option>
-                    ))}
-                  </select>
+            {orderList.length > 0 ? (
+              orderList.map((ord) => {
+                // 🎯 ২. MongoDB/Backend ফিল্ডগুলোর সাথে ম্যাপিং ও সেফটি
+                const orderId = ord._id || ord.id || 'N/A';
+                const customerName = ord.user?.name || ord.cus_name || 'Customer';
+                const customerEmail = ord.user?.email || ord.cus_email || 'N/A';
+                const totalAmount = Number(ord.totalPrice || ord.totalAmount || 0);
+                const itemCount = ord.products?.length || ord.items?.length || 1;
+                const paymentMethod = ord.paymentMethod || 'AamarPay';
+                const currentStatus = ord.status || 'Processing';
+
+                return (
+                  <tr key={orderId} className="hover:bg-slate-50 transition-colors">
+                    <td className="p-3 font-mono font-bold text-slate-900">{orderId}</td>
+                    <td className="p-3">
+                      <span className="font-bold text-slate-900 block">{customerName}</span>
+                      <span className="text-[10px] text-slate-400">{customerEmail}</span>
+                    </td>
+                    <td className="p-3 font-semibold text-slate-700">
+                      {itemCount} item(s)
+                    </td>
+                    <td className="p-3 font-black text-slate-900">
+                      ${totalAmount.toFixed(2)}
+                    </td>
+                    <td className="p-3 text-slate-600">{paymentMethod}</td>
+                    <td className="p-3">
+                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${getStatusBadge(currentStatus)}`}>
+                        {currentStatus}
+                      </span>
+                    </td>
+                    <td className="p-3 text-right">
+                      <select
+                        value={currentStatus}
+                        onChange={(e) => onUpdateStatus && onUpdateStatus(orderId, e.target.value)}
+                        className="p-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500 font-semibold text-slate-800 cursor-pointer"
+                      >
+                        {statusOptions.map((st) => (
+                          <option key={st} value={st}>{st}</option>
+                        ))}
+                      </select>
+                    </td>
+                  </tr>
+                );
+              })
+            ) : (
+              <tr>
+                <td colSpan="7" className="p-6 text-center text-slate-400 font-medium">
+                  No orders available.
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>

@@ -10,7 +10,8 @@ export const ManageOrders = () => {
   const fetchOrders = async () => {
     setLoading(true);
     try {
-      const res = await orderApi.getOrders();
+      // 🎯 getOrders() এর বদলে getAllOrders() হবে
+      const res = await orderApi.getAllOrders();
       setOrders(res.data || []);
     } catch (err) {
       console.error('Error fetching admin orders:', err);

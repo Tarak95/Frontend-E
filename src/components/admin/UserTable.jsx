@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Trash2, Shield, User } from 'lucide-react';
+import { Search, Trash2, Shield, User, Calendar, CheckCircle, XCircle } from 'lucide-react';
 
 export const UserTable = ({ users = [], onDeleteUser }) => {
   const [search, setSearch] = useState('');
@@ -33,6 +33,8 @@ export const UserTable = ({ users = [], onDeleteUser }) => {
               <th className="p-3">Role</th>
               <th className="p-3">Phone</th>
               <th className="p-3">Address</th>
+              <th className="p-3">Joined Date</th>
+              <th className="p-3">Status</th>
               <th className="p-3 text-right">Actions</th>
             </tr>
           </thead>
@@ -42,11 +44,25 @@ export const UserTable = ({ users = [], onDeleteUser }) => {
                 // MongoDB _id অথবা সাধারণ id দুটোর জন্যই সেফ কি (key)
                 const userId = usr._id || usr.id;
 
+                // 🎯 Joined Date ফরম্যাটিং (createdAt, joinedAt অথবা fallback)
+                const rawDate = usr.createdAt || usr.joinedAt || usr.created_at;
+                const joinedDate = rawDate
+                  ? new Date(rawDate).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric',
+                    })
+                  : 'N/A';
+
+                // 🎯 Status হ্যান্ডলিং
+                const userStatus = usr.status ? usr.status.toLowerCase() : 'active';
+                const isActive = userStatus === 'active';
+
                 return (
                   <tr key={userId} className="hover:bg-slate-50 transition-colors">
+                    {/* User Profile */}
                     <td className="p-3">
                       <div className="flex items-center gap-3">
-                        {/* 🎯 Avatar না থাকলে নামের প্রথম অক্ষর দিয়ে তৈরি আইকন */}
                         {usr.avatar ? (
                           <img
                             src={usr.avatar}
@@ -70,6 +86,7 @@ export const UserTable = ({ users = [], onDeleteUser }) => {
                       </div>
                     </td>
 
+                    {/* Role */}
                     <td className="p-3">
                       <span
                         className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold capitalize ${
@@ -83,19 +100,44 @@ export const UserTable = ({ users = [], onDeleteUser }) => {
                       </span>
                     </td>
 
+                    {/* Phone */}
                     <td className="p-3 text-slate-600">{usr.phone || 'N/A'}</td>
 
+                    {/* Address */}
                     <td className="p-3 text-slate-600 max-w-xs truncate">
                       {typeof usr.address === 'string'
                         ? usr.address
                         : usr.address?.street || 'N/A'}
                     </td>
 
+                    {/* Joined Date (নতুন যোগ করা হয়েছে) */}
+                    <td className="p-3 text-slate-600 font-medium">
+                      <div className="flex items-center gap-1.5">
+                        <Calendar size={13} className="text-slate-400" />
+                        <span>{joinedDate}</span>
+                      </div>
+                    </td>
+
+                    {/* Status (নতুন যোগ করা হয়েছে) */}
+                    <td className="p-3">
+                      <span
+                        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold capitalize ${
+                          isActive
+                            ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                            : 'bg-rose-100 text-rose-700 border border-rose-200'
+                        }`}
+                      >
+                        {isActive ? <CheckCircle size={11} /> : <XCircle size={11} />}
+                        {userStatus}
+                      </span>
+                    </td>
+
+                    {/* Actions */}
                     <td className="p-3 text-right">
                       {usr.role !== 'admin' && (
                         <button
                           onClick={() => onDeleteUser(userId)}
-                          className="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg cursor-pointer"
+                          className="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg cursor-pointer transition-colors"
                           title="Delete User"
                         >
                           <Trash2 size={15} />
@@ -107,7 +149,7 @@ export const UserTable = ({ users = [], onDeleteUser }) => {
               })
             ) : (
               <tr>
-                <td colSpan="5" className="p-6 text-center text-slate-400 font-medium">
+                <td colSpan="7" className="p-6 text-center text-slate-400 font-medium">
                   No users found.
                 </td>
               </tr>
