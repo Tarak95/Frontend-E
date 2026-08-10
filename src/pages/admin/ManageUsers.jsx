@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import UserTable from '../../components/admin/UserTable';
 import Loader from '../../components/common/Loader';
+import { Users } from 'lucide-react';
 
 export const ManageUsers = () => {
   const [users, setUsers] = useState([]);
@@ -14,8 +15,6 @@ export const ManageUsers = () => {
     try {
       const res = await axios.get('http://localhost:5000/allusers');
       
-      console.log('Backend Data:', res.data);
-
       if (res.data && Array.isArray(res.data.userData)) {
         setUsers(res.data.userData);
       } else if (Array.isArray(res.data)) {
@@ -36,14 +35,17 @@ export const ManageUsers = () => {
   }, []);
 
   const handleDeleteUser = async (id) => {
-    if (window.confirm('Are you sure you want to delete this user?')) {
-      try {
-        await axios.delete(`http://localhost:5000/deleteuser/${id}`);
-        setUsers((prevUsers) => prevUsers.filter((user) => (user._id || user.id) !== id));
-      } catch (err) {
-        console.error('Error deleting user:', err);
-        alert('Failed to delete user.');
-      }
+    if (!id) return;
+
+    // (Instant UI update)
+    setUsers((prevUsers) => prevUsers.filter((user) => (user._id || user.id) !== id));
+
+    try {
+      await axios.delete(`http://localhost:5000/deleteuser/${id}`);
+    } catch (err) {
+      console.error('Error deleting user:', err);
+      setErrorMessage('Failed to delete user on server.');
+      fetchUsers();
     }
   };
 
@@ -51,9 +53,16 @@ export const ManageUsers = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-black text-slate-900 tracking-tight">Manage User Accounts</h1>
-        <p className="text-xs text-slate-500">View registered customers and permissions</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight">Manage User Accounts</h1>
+            <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1 border border-emerald-200">
+              <Users size={14} /> Total: {users.length}
+            </span>
+          </div>
+          <p className="text-xs text-slate-500 mt-1">View registered customers and permissions</p>
+        </div>
       </div>
 
       {errorMessage && (
