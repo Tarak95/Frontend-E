@@ -1,5 +1,6 @@
 import React from 'react';
-import { Trash2, Shield, User, RotateCcw } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Trash2, Shield, User, RotateCcw, Eye } from 'lucide-react';
 
 export const UserTable = ({ 
   users = [], 
@@ -59,7 +60,7 @@ export const UserTable = ({
                       {usr.createdAt ? new Date(usr.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
                     </td>
 
-                    {/* Dynamic Status Badge */}
+                    {/* Status */}
                     <td className="p-3">
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                         isDeletedView 
@@ -72,25 +73,34 @@ export const UserTable = ({
 
                     {/* Actions Column */}
                     <td className="p-3 text-right">
-                      {isDeletedView ? (
-                        /* Deleted Tab-এ Activate Button  */
-                        <button
-                          onClick={() => onRestoreUser && onRestoreUser(userId)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 rounded-lg text-[11px] font-bold transition-all cursor-pointer"
-                          title="Activate User"
+                      <div className="flex items-center justify-end gap-2">
+                        {/* View Details Link */}
+                        <Link
+                          to={`/admin/users/${userId}`}
+                          className="p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
+                          title="View Details"
                         >
-                          <RotateCcw size={12} /> Activate
-                        </button>
-                      ) : (
-                        /* Active Tab-এ Delete Button  */
-                        <button
-                          onClick={() => onDeleteUser && onDeleteUser(userId)}
-                          className="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
-                          title="Delete User"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      )}
+                          <Eye size={16} />
+                        </Link>
+
+                        {isDeletedView ? (
+                          <button
+                            onClick={() => onRestoreUser && onRestoreUser(userId)}
+                            className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 rounded-lg text-[11px] font-bold transition-all cursor-pointer"
+                            title="Activate User"
+                          >
+                            <RotateCcw size={12} /> Activate
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => onDeleteUser && onDeleteUser(userId)}
+                            className="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                            title="Delete User"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );

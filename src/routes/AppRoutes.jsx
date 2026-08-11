@@ -32,6 +32,8 @@ import EditProduct from '../pages/admin/EditProduct';
 import ManageUsers from '../pages/admin/ManageUsers';
 import ManageOrders from '../pages/admin/ManageOrders';
 
+import UserDetails from '../pages/admin/UserDetails'; // ( UserDetails )
+
 // Common Pages & Protection
 import NotFound from '../pages/common/NotFound';
 import ProtectedRoute from '../components/common/ProtectedRoute';
@@ -74,7 +76,7 @@ export const AppRoutes = () => {
         />
       </Route> 
 
-      {/*  Auth Routes ( AuthLayout) */}
+      {/* Auth Routes (AuthLayout) */}
       <Route element={<AuthLayout />}>
         <Route path="login" element={<Login />} />
         <Route path="register" element={<Register />} />
@@ -101,9 +103,11 @@ export const AppRoutes = () => {
         <Route path="users" element={<ManageUsers />} />
         <Route path="orders" element={<ManageOrders />} />
         <Route path="profile" element={<Profile />} />
+
+        <Route path="users/:id" element={<UserDetails />} />
       </Route>
 
-      {/*Not Found Page */}
+      {/* Not Found Page */}
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
