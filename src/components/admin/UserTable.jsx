@@ -1,7 +1,12 @@
 import React from 'react';
-import { Trash2, Shield, User } from 'lucide-react';
+import { Trash2, Shield, User, RotateCcw } from 'lucide-react';
 
-export const UserTable = ({ users = [], onDeleteUser }) => {
+export const UserTable = ({ 
+  users = [], 
+  onDeleteUser, 
+  onRestoreUser, 
+  isDeletedView = false 
+}) => {
   return (
     <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden p-4">
       <div className="overflow-x-auto">
@@ -24,6 +29,7 @@ export const UserTable = ({ users = [], onDeleteUser }) => {
 
                 return (
                   <tr key={userId} className="hover:bg-slate-50 transition-colors">
+                    {/* User Info */}
                     <td className="p-3">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-800 font-bold flex items-center justify-center text-xs">
@@ -35,6 +41,8 @@ export const UserTable = ({ users = [], onDeleteUser }) => {
                         </div>
                       </div>
                     </td>
+
+                    {/* Role Badge */}
                     <td className="p-3">
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold inline-flex items-center gap-1 ${
                         usr.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-emerald-100 text-emerald-800'
@@ -43,24 +51,46 @@ export const UserTable = ({ users = [], onDeleteUser }) => {
                         {usr.role || 'user'}
                       </span>
                     </td>
+
+                    {/* Details */}
                     <td className="p-3 text-slate-600">{usr.phone || 'N/A'}</td>
                     <td className="p-3 text-slate-600 max-w-[200px] truncate">{usr.address || 'N/A'}</td>
                     <td className="p-3 text-slate-500">
                       {usr.createdAt ? new Date(usr.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
                     </td>
+
+                    {/* Dynamic Status Badge */}
                     <td className="p-3">
-                      <span className="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full text-[10px] font-bold">
-                        {usr.status || 'Active'}
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                        isDeletedView 
+                          ? 'bg-rose-100 text-rose-800' 
+                          : 'bg-emerald-100 text-emerald-800'
+                      }`}>
+                        {isDeletedView ? 'Deleted' : (usr.status || 'Active')}
                       </span>
                     </td>
+
+                    {/* Actions Column */}
                     <td className="p-3 text-right">
-                      <button
-                        onClick={() => onDeleteUser(userId)}
-                        className="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
-                        title="Delete User"
-                      >
-                        <Trash2 size={16} />
-                      </button>
+                      {isDeletedView ? (
+                        /* Deleted Tab-এ Activate Button  */
+                        <button
+                          onClick={() => onRestoreUser && onRestoreUser(userId)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 rounded-lg text-[11px] font-bold transition-all cursor-pointer"
+                          title="Activate User"
+                        >
+                          <RotateCcw size={12} /> Activate
+                        </button>
+                      ) : (
+                        /* Active Tab-এ Delete Button  */
+                        <button
+                          onClick={() => onDeleteUser && onDeleteUser(userId)}
+                          className="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                          title="Delete User"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      )}
                     </td>
                   </tr>
                 );
@@ -68,7 +98,7 @@ export const UserTable = ({ users = [], onDeleteUser }) => {
             ) : (
               <tr>
                 <td colSpan="7" className="p-6 text-center text-slate-400 font-medium">
-                  No registered users found.
+                  {isDeletedView ? 'No deleted users found.' : 'No registered users found.'}
                 </td>
               </tr>
             )}
