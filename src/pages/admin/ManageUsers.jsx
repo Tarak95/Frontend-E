@@ -6,58 +6,57 @@ import { Users, Search, Trash2, UserCheck } from 'lucide-react';
 
 export const ManageUsers = () => {
   const [users, setUsers] = useState([]);
-  const [deletedUsers, setDeletedUsers] = useState([]);
   const [activeTab, setActiveTab] = useState('active'); // 'active' or 'deleted'
-  
-  // Search Input Handler States
   const [searchInput, setSearchInput] = useState('');
-  const [appliedSearch, setAppliedSearch] = useState('');
   
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
 
-  // Active Users Fetch
-  const fetchActiveUsers = async () => {
+  // ১. ব্যাকএন্ড থেকে ডেটা আনার মূল ফাংশন
+  const fetchUsers = async (searchQuery = '') => {
+    setLoading(true);
+    setErrorMessage('');
     try {
-      const res = await axios.get('http://localhost:5000/allusers');
+      let res;
+      // যদি সার্চ ইনপুটে কোনো লেখা থাকে, ব্যাকএন্ড সার্চ API-তে রিকোয়েস্ট যাবে
+      if (searchQuery.trim()) {
+        res = await axios.post('http://localhost:5000/search', {
+          name: searchQuery.trim(),
+          isDelete: activeTab === 'deleted'
+        });
+      } else {
+        // সার্চ খালি থাকলে একটিভ/ডিলিটেড ট্যাবের সব ইউজার আসবে
+        const endpoint = activeTab === 'active' 
+          ? 'http://localhost:5000/allusers' 
+          : 'http://localhost:5000/deletedusers';
+        res = await axios.get(endpoint);
+      }
+
       let data = res.data?.userData || (Array.isArray(res.data) ? res.data : []);
       setUsers(data);
     } catch (err) {
-      console.error('Error fetching active users:', err);
-      setErrorMessage('Failed to load active users.');
+      console.error('Error fetching users:', err);
+      setErrorMessage('Failed to load users from server.');
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Deleted Users Fetch
-  const fetchDeletedUsers = async () => {
-    try {
-      const res = await axios.get('http://localhost:5000/deletedusers');
-      let data = res.data?.userData || (Array.isArray(res.data) ? res.data : []);
-      setDeletedUsers(data);
-    } catch (err) {
-      console.error('Error fetching deleted users:', err);
-    }
-  };
-
-  const fetchAllData = async () => {
-    setLoading(true);
-    await Promise.all([fetchActiveUsers(), fetchDeletedUsers()]);
-    setLoading(false);
-  };
-
+  // ট্যাব পরিবর্তন হলে বা পেজ প্রথম লোড হলে ব্যাকএন্ড থেকে নতুন ডেটা আসবে
   useEffect(() => {
-    fetchAllData();
-  }, []);
+    setSearchInput('');
+    fetchUsers('');
+  }, [activeTab]);
 
   // Soft Delete User
   const handleDeleteUser = async (id) => {
     if (!id) return;
     try {
       await axios.delete(`http://localhost:5000/deleteuser/${id}`);
-      fetchAllData();
+      fetchUsers(searchInput); // বর্তমান সার্চ স্টেট ধরে রেখেই রিফ্রেশ হবে
     } catch (err) {
       console.error('Error deleting user:', err);
-      setErrorMessage('Failed to delete user on server.');
+      setErrorMessage('Failed to delete user.');
     }
   };
 
@@ -66,30 +65,28 @@ export const ManageUsers = () => {
     if (!id) return;
     try {
       await axios.put(`http://localhost:5000/restoreuser/${id}`);
-      fetchAllData();
+      fetchUsers(searchInput);
     } catch (err) {
       console.error('Error restoring user:', err);
-      setErrorMessage('Failed to restore user on server.');
+      setErrorMessage('Failed to restore user.');
     }
   };
 
-  // Search Handle Function (Button Click or Enter Press)
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    setAppliedSearch(searchInput.trim());
+  // ২. টাইপ করে পুরো মুছে ফেললে অটোমেটিক ব্যাকএন্ড থেকে আগের লিস্ট চলে আসবে
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchInput(value);
+    
+    if (value.trim() === '') {
+      fetchUsers('');
+    }
   };
 
-  // Filter users based on applied search term
-  const targetList = activeTab === 'active' ? users : deletedUsers;
-  const filteredUsers = targetList.filter((user) => {
-    const name = user.name || user.username || '';
-    const email = user.email || '';
-    const term = appliedSearch.toLowerCase();
-    
-    return name.toLowerCase().includes(term) || email.toLowerCase().includes(term);
-  });
-
-  if (loading) return <Loader text="Loading accounts..." />;
+  // ৩. Enter চাপলে বা Search বাটনে ক্লিক করলে ব্যাকএন্ডে সার্চ রিকোয়েস্ট পাঠাবে
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    fetchUsers(searchInput);
+  };
 
   return (
     <div className="space-y-6">
@@ -104,7 +101,7 @@ export const ManageUsers = () => {
               ? 'bg-rose-100 text-rose-800 border-rose-200' 
               : 'bg-emerald-100 text-emerald-800 border-emerald-200'
           }`}>
-            <Users size={14} /> Total: {filteredUsers.length}
+            <Users size={14} /> Total: {users.length}
           </span>
         </div>
         <p className="text-xs text-slate-500 mt-1">
@@ -115,7 +112,7 @@ export const ManageUsers = () => {
       {/* Search Form + Tab Buttons */}
       <div className="flex flex-col md:flex-row items-center justify-between gap-4">
         
-        {/* Search Bar with Submit Button */}
+        {/* Search Bar */}
         <form 
           onSubmit={handleSearchSubmit} 
           className="flex items-center bg-white border border-slate-200 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-emerald-500/20 focus-within:border-emerald-500 transition-all w-full md:w-96 shadow-xs"
@@ -127,7 +124,7 @@ export const ManageUsers = () => {
             type="text"
             placeholder="Search by name or email..."
             value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
+            onChange={handleSearchChange}
             className="w-full px-3 py-2 text-xs font-medium bg-transparent focus:outline-none text-slate-800"
           />
           <button
@@ -148,7 +145,7 @@ export const ManageUsers = () => {
                 : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
             }`}
           >
-            <UserCheck size={16} /> Users ({users.length})
+            <UserCheck size={16} /> Active Users
           </button>
 
           <button
@@ -159,7 +156,7 @@ export const ManageUsers = () => {
                 : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
             }`}
           >
-            <Trash2 size={16} /> Deleted Users ({deletedUsers.length})
+            <Trash2 size={16} /> Deleted Users
           </button>
         </div>
       </div>
@@ -171,12 +168,16 @@ export const ManageUsers = () => {
       )}
 
       {/* User Table Component */}
-      <UserTable 
-        users={filteredUsers} 
-        onDeleteUser={activeTab === 'active' ? handleDeleteUser : null}
-        onRestoreUser={activeTab === 'deleted' ? handleRestoreUser : null}
-        isDeletedView={activeTab === 'deleted'}
-      />
+      {loading ? (
+        <Loader text="Searching database..." />
+      ) : (
+        <UserTable 
+          users={users} 
+          onDeleteUser={activeTab === 'active' ? handleDeleteUser : null}
+          onRestoreUser={activeTab === 'deleted' ? handleRestoreUser : null}
+          isDeletedView={activeTab === 'deleted'}
+        />
+      )}
     </div>
   );
 };
