@@ -30,8 +30,11 @@ export const Dashboard = () => {
         // 3. Users Extraction 
         const usrs = usrRes.data?.userData || (Array.isArray(usrRes.data) ? usrRes.data : []);
 
-        // Revenue Calculation
-        const rev = ords.reduce((acc, o) => acc + Number(o.totalAmount || o.totalPrice || 0), 0);
+        // Revenue Calculation (Safe Number parsing)
+        const rev = ords.reduce((acc, o) => {
+          const val = Number(o.totalAmount || o.totalPrice || 0);
+          return acc + (isNaN(val) ? 0 : val);
+        }, 0);
 
         setStats({
           productsCount: prods.length,
@@ -41,7 +44,7 @@ export const Dashboard = () => {
         });
 
         setRecentOrders(ords.slice(0, 5));
-        setLowStockProducts(prods.filter(p => (p.stock || 0) <= 15).slice(0, 4));
+        setLowStockProducts(prods.filter(p => Number(p.stock ?? 0) <= 15).slice(0, 4));
       } catch (err) {
         console.error('Error loading dashboard stats:', err);
       } finally {
@@ -55,7 +58,7 @@ export const Dashboard = () => {
   if (loading) return <Loader text="Loading dashboard metrics..." />;
 
   const statCards = [
-    { label: 'Total Revenue', value: `$${stats.totalRevenue.toFixed(2)}`, icon: DollarSign, color: 'bg-emerald-500' },
+    { label: 'Total Revenue', value: `$${(stats.totalRevenue || 0).toFixed(2)}`, icon: DollarSign, color: 'bg-emerald-500' },
     { label: 'Total Orders', value: stats.ordersCount, icon: ShoppingBag, color: 'bg-blue-500' },
     { label: 'Total Users', value: stats.usersCount, icon: Users, color: 'bg-purple-500' },
     { label: 'Active Catalog', value: stats.productsCount, icon: Package, color: 'bg-amber-500' },
@@ -102,20 +105,25 @@ export const Dashboard = () => {
 
           <div className="divide-y divide-slate-100">
             {recentOrders.length > 0 ? (
-              recentOrders.map((ord) => (
-                <div key={ord._id || ord.id} className="py-3 flex items-center justify-between gap-4">
-                  <div>
-                    <span className="font-mono font-bold text-xs text-slate-900 block">{ord._id || ord.id}</span>
-                    <span className="text-[11px] text-slate-500">{ord.customerName || ord.user?.name || 'Customer'} • {ord.items?.length || 1} item(s)</span>
+              recentOrders.map((ord) => {
+                const amount = Number(ord.totalAmount || ord.totalPrice || 0);
+                return (
+                  <div key={ord._id || ord.id} className="py-3 flex items-center justify-between gap-4">
+                    <div>
+                      <span className="font-mono font-bold text-xs text-slate-900 block">{ord._id || ord.id}</span>
+                      <span className="text-[11px] text-slate-500">{ord.customerName || ord.user?.name || 'Customer'} • {ord.items?.length || 1} item(s)</span>
+                    </div>
+                    <div className="text-right">
+                      <span className="font-bold text-xs text-slate-900 block">
+                        ${isNaN(amount) ? '0.00' : amount.toFixed(2)}
+                      </span>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${ord.status === 'Delivered' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
+                        {ord.status || 'Pending'}
+                      </span>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <span className="font-bold text-xs text-slate-900 block">${(ord.totalAmount || ord.totalPrice || 0).toFixed(2)}</span>
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${ord.status === 'Delivered' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
-                      {ord.status || 'Pending'}
-                    </span>
-                  </div>
-                </div>
-              ))
+                );
+              })
             ) : (
               <p className="text-xs text-slate-400 py-4 text-center">No recent orders found.</p>
             )}
@@ -131,20 +139,24 @@ export const Dashboard = () => {
 
           <div className="space-y-3">
             {lowStockProducts.length > 0 ? (
-              lowStockProducts.map((p) => (
-                <div key={p._id || p.id} className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <img src={p.image || p.images?.[0]} alt={p.name} className="w-8 h-8 rounded-lg object-cover" />
-                    <div>
-                      <h4 className="text-xs font-bold text-slate-900 line-clamp-1">{p.name}</h4>
-                      <span className="text-[10px] text-slate-400 capitalize">{p.categoryName || p.category}</span>
+              lowStockProducts.map((p) => {
+                const img = p.image || p.images?.[0] || 'https://via.placeholder.com/40';
+                const title = p.title || p.name || 'Product';
+                return (
+                  <div key={p._id || p.id} className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <img src={img} alt={title} className="w-8 h-8 rounded-lg object-cover" />
+                      <div>
+                        <h4 className="text-xs font-bold text-slate-900 line-clamp-1">{title}</h4>
+                        <span className="text-[10px] text-slate-400 capitalize">{p.categoryName || p.category || 'General'}</span>
+                      </div>
                     </div>
+                    <span className="text-xs font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full">
+                      {p.stock ?? 0} left
+                    </span>
                   </div>
-                  <span className="text-xs font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full">
-                    {p.stock} left
-                  </span>
-                </div>
-              ))
+                );
+              })
             ) : (
               <p className="text-xs text-slate-400 py-4 text-center">No low stock alerts.</p>
             )}
